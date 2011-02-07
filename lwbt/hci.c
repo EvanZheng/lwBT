@@ -160,8 +160,6 @@ void hci_cmd_complete(err_t (* cmd_complete)(void *arg, struct hci_pcb *pcb, u8_
 }
 
 /* 
->>>>>>>>>>>>>>>>>>>> File 1
->>>>>>>>>>>>>>>>>>>> File 2
  * hci_cmd_status():
  *
  * Used to specify the function that should be called when HCI has received a 
@@ -173,7 +171,6 @@ void hci_cmd_status(err_t (* cmd_status)(void *arg, struct hci_pcb *pcb, u8_t og
 }
 
 /* 
-<<<<<<<<<<<<<<<<<<<<
  * hci_pin_req():
  *
  * Used to specify the function that should be called when HCI has received a 
@@ -218,8 +215,6 @@ void hci_wlp_complete(err_t (* wlp_complete)(void *arg, struct bd_addr *bdaddr))
 }
 
 /* 
->>>>>>>>>>>>>>>>>>>> File 1
->>>>>>>>>>>>>>>>>>>> File 2
  * hci_vendor_spec():
  *
  * Used to specify the function that should be called when HCI recieves a 
@@ -231,7 +226,6 @@ void hci_vendor_spec(u8_t (* vendor_spec)(u8_t c))
 }
 
 /* 
-<<<<<<<<<<<<<<<<<<<<
  * hci_get_link():
  *
  * Used to get the link structure for that represents an ACL connection.
@@ -602,6 +596,15 @@ void hci_event_input(struct pbuf *p)
 			switch(((u8_t *)p->payload)[0]) {
 				case HCI_ERR_SUCCESS:
 					LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Command Status\n"));
+					pbuf_header(p, -2); /* Adjust payload pointer not to cover
+										   Num_HCI_Command_Packets and status
+										   parameter */
+					ocf = *((u16_t *)p->payload) & 0x03FF;
+					ogf = *((u16_t *)p->payload) >> 10;
+					pbuf_header(p, -2); /* Adjust payload pointer not to cover
+										   Command_Opcode parameter */
+					HCI_EVENT_CMD_STATUS(pcb,ogf,ocf,((u8_t *)p->payload)[0],ret);
+					pbuf_header(p, 4);
 					break;
 				default:
 					LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Command failed, %s\n", hci_get_error_code(((u8_t *)p->payload)[0])));
@@ -713,6 +716,19 @@ void hci_event_input(struct pbuf *p)
 	}/* switch */
 }
 
+/* hci_vendor_spec_input():
+ *
+ * Called by the physical bus interface. Passes received chars to the external
+ * function specified to handle them.
+ */
+u8_t hci_vendor_spec_input(u8_t c)
+{
+	if(pcb->vendor_spec != NULL)
+		return pcb->vendor_spec(c);
+	else
+		return 0;
+}
+
 /* HCI Commands */ 
 
 
@@ -732,6 +748,20 @@ struct pbuf * hci_cmd_ass(struct pbuf *p, u8_t ocf, u8_t ogf, u8_t len)
 	return p;
 }
 
+err_t hci_raw_cmd(void* datas, u16_t len)
+{
+	struct pbuf *p;
+	if((p = pbuf_alloc(PBUF_RAW, len+1, PBUF_RAM)) == NULL) {
+		LWIP_DEBUGF(HCI_DEBUG, ("hci_raw_cmd: Could not allocate memory for pbuf\n"));
+		return ERR_MEM; /* Could not allocate memory for pbuf */
+	}
+	((u8_t *)p->payload)[0] = HCI_COMMAND_DATA_PACKET; /* cmd packet type */
+	MEMCPY(((u8_t *)p->payload) + 1, datas, len);
+	phybusif_output(p, p->tot_len);
+	pbuf_free(p);
+
+	return ERR_OK;
+}
 
 /* hci_inquiry():
  *
@@ -1278,7 +1308,24 @@ err_t hci_read_bd_addr(err_t (* rbd_complete)(void *arg, struct bd_addr *bdaddr)
 	} 
 	/* Assembling command packet */
 	p = hci_cmd_ass(p, HCI_OCF_READ_BD_ADDR, HCI_OGF_INFO_PARAM, HCI_R_BD_ADDR_PLEN);
+	/* Assembling cmd prameters */
+	phybusif_output(p, p->tot_len);
+	pbuf_free(p);
 
+	return ERR_OK;
+}
+
+err_t hci_read_local_version_info(void)
+{
+	struct pbuf *p;
+
+
+	if((p = pbuf_alloc(PBUF_RAW, HCI_R_BD_ADDR_PLEN, PBUF_RAM)) == NULL) {
+		LWIP_DEBUGF(HCI_DEBUG, ("hci_read_local_version_info: Could not allocate memory for pbuf\n"));
+		return ERR_MEM;
+	} 
+	/* Assembling command packet */
+	p = hci_cmd_ass(p, HCI_OCF_READ_LOCAL_VERSION_INFORMATION, HCI_OGF_INFO_PARAM, HCI_R_LOCAL_VERSION_INFORMATION);
 	/* Assembling cmd prameters */
 	phybusif_output(p, p->tot_len);
 	pbuf_free(p);
