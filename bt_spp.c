@@ -199,7 +199,7 @@ err_t l2cap_disconnected_ind(void *arg, struct l2cap_pcb *pcb, err_t err)
 		ret = rfcomm_lp_disconnected(pcb);
 		/* We can do this since we know that we are the only channel on the ACL link.
 		 * If ACL link already is down we get an ERR_CONN returned */
-		hci_disconnect(&(pcb->remote_bdaddr), HCI_OTHER_END_TERMINATED_CONN_USER_ENDED);
+		hci_disconnect(&(pcb->remote_bdaddr), HCI_ERR_OTHER_END_TERMINATED_CONN_USER_ENDED);
 		l2cap_close(pcb);
 		bt_spp_start();
 	}
@@ -847,7 +847,7 @@ err_t inquiry_complete(void *arg, struct hci_pcb *pcb, struct hci_inq_res *ires,
 {
 	struct l2cap_pcb *l2cappcb;
 
-	if(result == HCI_SUCCESS) {
+	if(result == HCI_ERR_SUCCESS) {
 		LWIP_DEBUGF(BT_SPP_DEBUG, ("successful Inquiry\n"));
 		if(ires != NULL) {
 			LWIP_DEBUGF(BT_SPP_DEBUG, ("Initiate L2CAP connection\n"));
@@ -940,10 +940,10 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 	u8_t flag = HCI_SET_EV_FILTER_AUTOACC_ROLESW;
 
 	switch(ogf) {
-		case HCI_INFO_PARAM:
+		case HCI_OGF_INFO_PARAM:
 			switch(ocf) {
-				case HCI_READ_BUFFER_SIZE:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_READ_BUFFER_SIZE:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_READ_BUFFER_SIZE.\n"));
 						hci_read_bd_addr(read_bdaddr_complete);
 					} else {
@@ -951,8 +951,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_READ_BD_ADDR:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_READ_BD_ADDR:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_READ_BD_ADDR.\n"));
 						/* Make discoverable */
 						hci_set_event_filter(HCI_SET_EV_FILTER_CONNECTION,
@@ -968,10 +968,10 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 					break;
 			}
 			break;
-		case HCI_HC_BB_OGF:
+		case HCI_OGF_HOST_C_N_BB:
 			switch(ocf) {
-				case HCI_RESET:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_RESET:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_RESET.\n")); 
 						hci_read_buffer_size();
 					} else {
@@ -979,8 +979,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_WRITE_SCAN_ENABLE:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_WRITE_SCAN_ENABLE:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_WRITE_SCAN_ENABLE.\n")); 
 						//hci_cmd_complete(NULL); /* Initialization done, don't come back */
 					} else {
@@ -988,8 +988,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_SET_EVENT_FILTER:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_SET_EVENT_FILTER:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_SET_EVENT_FILTER.\n"));
 							hci_write_cod(cod_spp);
 							hci_write_scan_enable(HCI_SCAN_EN_INQUIRY | HCI_SCAN_EN_PAGE);
@@ -998,8 +998,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_CHANGE_LOCAL_NAME:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_CHANGE_LOCAL_NAME:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("Successful HCI_CHANGE_LOCAL_NAME.\n"));
 						hci_write_page_timeout(0x4000); /* 10.24s */
 					} else {
@@ -1007,8 +1007,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_WRITE_COD:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_WRITE_COD:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("Successful HCI_WRITE_COD.\n"));
 						n1 = (u8_t)(bt_spp_state.bdaddr.addr[0] / 100);
 						n2 = (u8_t)(bt_spp_state.bdaddr.addr[0] / 10) - n1 * 10;
@@ -1022,8 +1022,8 @@ err_t command_complete(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t 
 						return ERR_CONN;
 					}
 					break;
-				case HCI_WRITE_PAGE_TIMEOUT:
-					if(result == HCI_SUCCESS) {
+				case HCI_OCF_WRITE_PAGE_TIMEOUT:
+					if(result == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(BT_SPP_DEBUG, ("successful HCI_WRITE_PAGE_TIMEOUT.\n"));
 						//hci_cmd_complete(NULL); /* Initialization done, don't come back */
 						hci_connection_complete(acl_conn_complete);

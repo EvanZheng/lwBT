@@ -160,6 +160,20 @@ void hci_cmd_complete(err_t (* cmd_complete)(void *arg, struct hci_pcb *pcb, u8_
 }
 
 /* 
+>>>>>>>>>>>>>>>>>>>> File 1
+>>>>>>>>>>>>>>>>>>>> File 2
+ * hci_cmd_status():
+ *
+ * Used to specify the function that should be called when HCI has received a 
+ * command status event.
+ */
+void hci_cmd_status(err_t (* cmd_status)(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t result)) 
+{
+	pcb->cmd_status = cmd_status;
+}
+
+/* 
+<<<<<<<<<<<<<<<<<<<<
  * hci_pin_req():
  *
  * Used to specify the function that should be called when HCI has received a 
@@ -204,6 +218,20 @@ void hci_wlp_complete(err_t (* wlp_complete)(void *arg, struct bd_addr *bdaddr))
 }
 
 /* 
+>>>>>>>>>>>>>>>>>>>> File 1
+>>>>>>>>>>>>>>>>>>>> File 2
+ * hci_vendor_spec():
+ *
+ * Used to specify the function that should be called when HCI recieves a 
+ * vendor specific packet.
+ */
+void hci_vendor_spec(u8_t (* vendor_spec)(u8_t c))
+{
+	pcb->vendor_spec = vendor_spec;
+}
+
+/* 
+<<<<<<<<<<<<<<<<<<<<
  * hci_get_link():
  *
  * Used to get the link structure for that represents an ACL connection.
@@ -271,89 +299,89 @@ void hci_acl_input(struct pbuf *p)
 #if HCI_EV_DEBUG
 char * hci_get_error_code(u8_t code) {
 	switch(code) {
-		case HCI_SUCCESS:
+		case HCI_ERR_SUCCESS:
 			return("Success");
-		case HCI_UNKNOWN_HCI_COMMAND:
+		case HCI_ERR_UNKNOWN_HCI_COMMAND:
 			return("Unknown HCI Command");
-		case HCI_NO_CONNECTION:
+		case HCI_ERR_NO_CONNECTION:
 			return("No Connection");
-		case HCI_HW_FAILURE:
+		case HCI_ERR_HW_FAILURE:
 			return("Hardware Failure");
-		case HCI_PAGE_TIMEOUT:
+		case HCI_ERR_PAGE_TIMEOUT:
 			return("Page Timeout");
-		case HCI_AUTHENTICATION_FAILURE:
+		case HCI_ERR_AUTHENTICATION_FAILURE:
 			return("Authentication Failure");
-		case HCI_KEY_MISSING:
+		case HCI_ERR_KEY_MISSING:
 			return("Key Missing");
-		case HCI_MEMORY_FULL:
+		case HCI_ERR_MEMORY_FULL:
 			return("Memory Full");
-		case HCI_CONN_TIMEOUT:
+		case HCI_ERR_CONN_TIMEOUT:
 			return("Connection Timeout");
-		case HCI_MAX_NUMBER_OF_CONNECTIONS:
+		case HCI_ERR_MAX_NUMBER_OF_CONNECTIONS:
 			return("Max Number Of Connections");
-		case HCI_MAX_NUMBER_OF_SCO_CONNECTIONS_TO_DEVICE:
+		case HCI_ERR_MAX_NUMBER_OF_SCO_CONNECTIONS_TO_DEVICE:
 			return("Max Number Of SCO Connections To A Device");
-		case HCI_ACL_CONNECTION_EXISTS:
+		case HCI_ERR_ACL_CONNECTION_EXISTS:
 			return("ACL connection already exists");
-		case HCI_COMMAND_DISSALLOWED:
+		case HCI_ERR_COMMAND_DISSALLOWED:
 			return("Command Disallowed");
-		case HCI_HOST_REJECTED_DUE_TO_LIMITED_RESOURCES:
+		case HCI_ERR_HOST_REJECTED_DUE_TO_LIMITED_RESOURCES:
 			return("Host Rejected due to limited resources");
-		case HCI_HOST_REJECTED_DUE_TO_SECURITY_REASONS:
+		case HCI_ERR_HOST_REJECTED_DUE_TO_SECURITY_REASONS:
 			return("Host Rejected due to security reasons");
-		case HCI_HOST_REJECTED_DUE_TO_REMOTE_DEVICE_ONLY_PERSONAL_SERVICE:
+		case HCI_ERR_HOST_REJECTED_DUE_TO_REMOTE_DEVICE_ONLY_PERSONAL_SERVICE:
 			return("Host Rejected due to remote device is only a personal device");
-		case HCI_HOST_TIMEOUT:
+		case HCI_ERR_HOST_TIMEOUT:
 			return("Host Timeout");
-		case HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE:
+		case HCI_ERR_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE:
 			return("Unsupported Feature or Parameter Value");
-		case HCI_INVALID_HCI_COMMAND_PARAMETERS:
+		case HCI_ERR_INVALID_HCI_COMMAND_PARAMETERS:
 			return("Invalid HCI Command Parameters");
-		case HCI_OTHER_END_TERMINATED_CONN_USER_ENDED:
+		case HCI_ERR_OTHER_END_TERMINATED_CONN_USER_ENDED:
 			return("Other End Terminated Connection: User Ended Connection");
-		case HCI_OTHER_END_TERMINATED_CONN_LOW_RESOURCES:
+		case HCI_ERR_OTHER_END_TERMINATED_CONN_LOW_RESOURCES:
 			return("Other End Terminated Connection: Low Resources");
-		case HCI_OTHER_END_TERMINATED_CONN_ABOUT_TO_POWER_OFF:
+		case HCI_ERR_OTHER_END_TERMINATED_CONN_ABOUT_TO_POWER_OFF:
 			return("Other End Terminated Connection: About to Power Off");
-		case HCI_CONN_TERMINATED_BY_LOCAL_HOST:
+		case HCI_ERR_CONN_TERMINATED_BY_LOCAL_HOST:
 			return("Connection Terminated by Local Host");
-		case HCI_REPETED_ATTEMPTS:
+		case HCI_ERR_REPETED_ATTEMPTS:
 			return("Repeated Attempts");
-		case HCI_PAIRING_NOT_ALLOWED:
+		case HCI_ERR_PAIRING_NOT_ALLOWED:
 			return("Pairing Not Allowed");
-		case HCI_UNKNOWN_LMP_PDU:
+		case HCI_ERR_UNKNOWN_LMP_PDU:
 			return("Unknown LMP PDU");
-		case HCI_UNSUPPORTED_REMOTE_FEATURE:
+		case HCI_ERR_UNSUPPORTED_REMOTE_FEATURE:
 			return("Unsupported Remote Feature");
-		case HCI_SCO_OFFSET_REJECTED:
+		case HCI_ERR_SCO_OFFSET_REJECTED:
 			return("SCO Offset Rejected");
-		case HCI_SCO_INTERVAL_REJECTED:
+		case HCI_ERR_SCO_INTERVAL_REJECTED:
 			return("SCO Interval Rejected");
-		case HCI_SCO_AIR_MODE_REJECTED:
+		case HCI_ERR_SCO_AIR_MODE_REJECTED:
 			return("SCO Air Mode Rejected");
-		case HCI_INVALID_LMP_PARAMETERS:
+		case HCI_ERR_INVALID_LMP_PARAMETERS:
 			return("Invalid LMP Parameters");
-		case HCI_UNSPECIFIED_ERROR:
+		case HCI_ERR_UNSPECIFIED_ERROR:
 			return("Unspecified Error");
-		case HCI_UNSUPPORTED_LMP_PARAMETER_VALUE:
+		case HCI_ERR_UNSUPPORTED_LMP_PARAMETER_VALUE:
 			return("Unsupported LMP Parameter Value");
-		case HCI_ROLE_CHANGE_NOT_ALLOWED:
+		case HCI_ERR_ROLE_CHANGE_NOT_ALLOWED:
 			return("Role Change Not Allowed");
-		case HCI_LMP_RESPONSE_TIMEOUT:
+		case HCI_ERR_LMP_RESPONSE_TIMEOUT:
 			return("LMP Response Timeout");
-		case HCI_LMP_ERROR_TRANSACTION_COLLISION:
+		case HCI_ERR_LMP_ERROR_TRANSACTION_COLLISION:
 			return("LMP Error Transaction Collision");
-		case HCI_LMP_PDU_NOT_ALLOWED:
+		case HCI_ERR_LMP_PDU_NOT_ALLOWED:
 			return("LMP PDU Not Allowed");
-		case HCI_ENCRYPTION_MODE_NOT_ACCEPTABLE:
+		case HCI_ERR_ENCRYPTION_MODE_NOT_ACCEPTABLE:
 			return("Encryption Mode Not Acceptable");
-		case HCI_UNIT_KEY_USED:
+		case HCI_ERR_UNIT_KEY_USED:
 			return("Unit Key Used");
-		case HCI_QOS_NOT_SUPPORTED:
+		case HCI_ERR_QOS_NOT_SUPPORTED:
 			return("QoS is Not Supported");
-		case HCI_INSTANT_PASSED:
+		case HCI_ERR_INSTANT_PASSED:
 			return("Instant Passed");
-		case HCI_PAIRING_UNIT_KEY_NOT_SUPPORTED:
+		case HCI_ERR_PAIRING_UNIT_KEY_NOT_SUPPORTED:
 			return("Pairing with Unit Key Not Supported");
 		default:
 			return("Error code unknown");
@@ -388,11 +416,11 @@ void hci_event_input(struct pbuf *p)
 	LWIP_DEBUGF(HCI_EV_DEBUG, ("\n"));
 
 	switch(evhdr->code) {
-		case HCI_INQUIRY_COMPLETE:
+		case HCI_EVT_INQUIRY_COMPLETE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Inquiry complete, 0x%x %s\n", ((u8_t *)p->payload)[0], hci_get_error_code(((u8_t *)p->payload)[0])));
 			HCI_EVENT_INQ_COMPLETE(pcb,((u8_t *)p->payload)[0],ret);
 			break;
-		case HCI_INQUIRY_RESULT:
+		case HCI_EVT_INQUIRY_RESULT:
 			for(i=0;i<((u8_t *)p->payload)[0];i++) {
 				resp_offset = i*14;
 				LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Inquiry result %d\nBD_ADDR: 0x", i));
@@ -421,17 +449,17 @@ void hci_event_input(struct pbuf *p)
 				}
 			}
 			break;
-		case HCI_CONNECTION_COMPLETE:
+		case HCI_EVT_CONNECTION_COMPLETE:
 			bdaddr = (void *)(((u8_t *)p->payload)+3); /* Get the Bluetooth address */
 			link = hci_get_link(bdaddr);
 			switch(((u8_t *)p->payload)[0]) {
-				case HCI_SUCCESS:
+				case HCI_ERR_SUCCESS:
 					LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Conn successfully completed\n"));
 					if(link == NULL) {
 						if((link = hci_new()) == NULL) {
 							/* Could not allocate memory for link. Disconnect */
 							LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Could not allocate memory for link. Disconnect\n"));
-							hci_disconnect(bdaddr, HCI_OTHER_END_TERMINATED_CONN_LOW_RESOURCES);
+							hci_disconnect(bdaddr, HCI_ERR_OTHER_END_TERMINATED_CONN_LOW_RESOURCES);
 							/* Notify L2CAP */
 							lp_disconnect_ind(bdaddr);
 							break;
@@ -472,9 +500,9 @@ void hci_event_input(struct pbuf *p)
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Link_type: 0x%x\n",((u8_t *)p->payload)[9]));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Encryption_Mode: 0x%x\n",((u8_t *)p->payload)[10]));
 			break;
-		case HCI_DISCONNECTION_COMPLETE:
+		case HCI_EVT_DISCONNECTION_COMPLETE:
 			switch(((u8_t *)p->payload)[0]) {
-				case HCI_SUCCESS:
+				case HCI_ERR_SUCCESS:
 					LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Disconn has occurred\n"));
 					for(link = hci_active_links; link != NULL; link = link->next) {
 						if(link->conhdl == *((u16_t *)(((u8_t *)p->payload)+1))) {
@@ -495,13 +523,13 @@ void hci_event_input(struct pbuf *p)
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Conn_hdl: 0x%x%x\n", ((u8_t *)p->payload)[1], ((u8_t *)p->payload)[2]));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Reason: 0x%x %s\n", ((u8_t *)p->payload)[3], hci_get_error_code(((u8_t *)p->payload)[3])));
 			break;
-		case HCI_ENCRYPTION_CHANGE:
+		case HCI_EVT_ENCRYPTION_CHANGE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Encryption changed. Status = 0x%x, Encryption enable = 0x%x\n", ((u8_t *)p->payload)[0], ((u8_t *)p->payload)[3]));
 			break;
-		case HCI_QOS_SETUP_COMPLETE:
+		case HCI_EVT_QOS_SETUP_COMPLETE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: QOS setup complete result = 0x%x\n", ((u8_t *)p->payload)[0]));
 			break;
-		case HCI_COMMAND_COMPLETE:
+		case HCI_EVT_COMMAND_COMPLETE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Command Complete\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Num_HCI_Command_Packets: 0x%x\n", ((u8_t *)p->payload)[0]));
 
@@ -517,9 +545,9 @@ void hci_event_input(struct pbuf *p)
 
 			pbuf_header(p, -2); /* Adjust payload pointer not to cover Command_Opcode
 								   parameter */
-			if(ogf == HCI_INFO_PARAM) {
-				if(ocf == HCI_READ_BUFFER_SIZE) {
-					if(((u8_t *)p->payload)[0] == HCI_SUCCESS) {
+			if(ogf == HCI_OGF_INFO_PARAM) {
+				if(ocf == HCI_OCF_READ_BUFFER_SIZE) {
+					if(((u8_t *)p->payload)[0] == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Read_Buffer_Size command succeeded\n"));
 						LWIP_DEBUGF(HCI_EV_DEBUG, ("HC_ACL_Data_Packet_Length: 0x%x%x\n", ((u8_t *)p->payload)[1], ((u8_t *)p->payload)[2]));
 						LWIP_DEBUGF(HCI_EV_DEBUG, ("HC_SCO_Data_Packet_Length: 0x%x\n", ((u8_t *)p->payload)[3]));
@@ -535,21 +563,21 @@ void hci_event_input(struct pbuf *p)
 						return;
 					}
 				}
-				if(ocf == HCI_READ_BD_ADDR) {
-					if(((u8_t *)p->payload)[0] == HCI_SUCCESS) {
+				if(ocf == HCI_OCF_READ_BD_ADDR) {
+					if(((u8_t *)p->payload)[0] == HCI_ERR_SUCCESS) {
 						bdaddr = (void *)(((u8_t *)p->payload) + 1); /* Get the Bluetooth address */
 						HCI_EVENT_RBD_COMPLETE(pcb, bdaddr, ret); /* Notify application.*/
 					}
 				}
 			}
-			if(ogf == HCI_HOST_C_N_BB && ocf == HCI_SET_HC_TO_H_FC) {
-				if(((u8_t *)p->payload)[0] == HCI_SUCCESS) {
+			if(ogf == HCI_OGF_HOST_C_N_BB && ocf == HCI_OCF_SET_HC_TO_H_FC) {
+				if(((u8_t *)p->payload)[0] == HCI_ERR_SUCCESS) {
 					pcb->flow = 1;
 				}
 			}
-			if(ogf == HCI_LINK_POLICY) {
-				if(ocf == HCI_W_LINK_POLICY) {
-					if(((u8_t *)p->payload)[0] == HCI_SUCCESS) {
+			if(ogf == HCI_OGF_LINK_POLICY) {
+				if(ocf == HCI_OCF_W_LINK_POLICY) {
+					if(((u8_t *)p->payload)[0] == HCI_ERR_SUCCESS) {
 						LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Successful HCI_W_LINK_POLICY.\n"));
 						for(link = hci_active_links; link != NULL; link = link->next) {
 							if(link->conhdl == *((u16_t *)(((u8_t *)p->payload)+1))) {
@@ -570,9 +598,9 @@ void hci_event_input(struct pbuf *p)
 
 			HCI_EVENT_CMD_COMPLETE(pcb,ogf,ocf,((u8_t *)p->payload)[0],ret);
 			break;
-		case HCI_COMMAND_STATUS:
+		case HCI_EVT_COMMAND_STATUS:
 			switch(((u8_t *)p->payload)[0]) {
-				case HCI_SUCCESS:
+				case HCI_ERR_SUCCESS:
 					LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Command Status\n"));
 					break;
 				default:
@@ -594,18 +622,18 @@ void hci_event_input(struct pbuf *p)
 			pcb->numcmd += ((u8_t *)p->payload)[1]; 
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Command_Opcode: 0x%x 0x%x\n", ((u8_t *)p->payload)[2], ((u8_t *)p->payload)[3]));
 			break;
-		case HCI_HARDWARE_ERROR:
+		case HCI_EVT_HARDWARE_ERROR:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Hardware Error\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Hardware_code: 0x%x\n\n", ((u8_t *)p->payload)[0]));
 			hci_reset();
 			//TODO: IS THIS FATAL??
 			break; 
-		case HCI_ROLE_CHANGE:
+		case HCI_EVT_ROLE_CHANGE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Role change\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Status: 0x%x\n", ((u8_t *)p->payload)[0]));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("New Role: 0x%x\n", ((u8_t *)p->payload)[7]));
 			break;
-		case HCI_NBR_OF_COMPLETED_PACKETS:
+		case HCI_EVT_NBR_OF_COMPLETED_PACKETS:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Number Of Completed Packets\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Number_of_Handles: 0x%x\n", ((u8_t *)p->payload)[0]));
 			for(i=0;i<((u8_t *)p->payload)[0];i++) {
@@ -639,28 +667,28 @@ void hci_event_input(struct pbuf *p)
 #endif /* RFCOMM_FLOW_QUEUEING */	
 			}
 			break;
-		case HCI_MODE_CHANGE:
+		case HCI_EVT_MODE_CHANGE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Mode change\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Status: 0x%x\n", ((u8_t *)p->payload)[0]));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Conn_hdl: 0x%x\n", ((u16_t *)(((u8_t *)p->payload) + 1))[0]));
 			break;
-		case HCI_DATA_BUFFER_OVERFLOW:
+		case HCI_EVT_DATA_BUFFER_OVERFLOW:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Data Buffer Overflow\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Link_Type: 0x%x\n", ((u8_t *)p->payload)[0]));
 			//TODO: IS THIS FATAL????
 			break;
-		case HCI_MAX_SLOTS_CHANGE:
+		case HCI_EVT_MAX_SLOTS_CHANGE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Max slots changed\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("Conn_hdl: 0x%x\n", ((u16_t *)p->payload)[0]));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("LMP max slots: 0x%x\n", ((u8_t *)p->payload)[2]));
 			break; 
-		case HCI_PIN_CODE_REQUEST:
+		case HCI_EVT_PIN_CODE_REQUEST:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Pin request\n"));
 			bdaddr = (void *)((u8_t *)p->payload); /* Get the Bluetooth address */
 			HCI_EVENT_PIN_REQ(pcb, bdaddr, ret); /* Notify application. If event is not registered, 
 													send a negative reply */
 			break;
-		case HCI_LINK_KEY_NOTIFICATION:
+		case HCI_EVT_LINK_KEY_NOTIFICATION:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Link key notification\n"));
 			bdaddr = (void *)((u8_t *)p->payload); /* Get the Bluetooth address */
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("bdaddr: %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -671,7 +699,7 @@ void hci_event_input(struct pbuf *p)
 
 			HCI_EVENT_LINK_KEY_NOT(pcb, bdaddr, ((u8_t *)p->payload) + 6, ret); /* Notify application.*/
 			break;
-		case HCI_PAGE_SCAN_REP_MODE_CHANGE:
+		case HCI_EVT_PAGE_SCAN_REP_MODE_CHANGE:
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("hci_event_input: Page Scan Repetition Mode changed\n"));
 			LWIP_DEBUGF(HCI_EV_DEBUG, ("bdaddr: %02x:%02x:%02x:%02x:%02x:%02x\n",
 						((u8_t *)p->payload)[5], ((u8_t *)p->payload)[4], ((u8_t *)p->payload)[3],
@@ -704,6 +732,7 @@ struct pbuf * hci_cmd_ass(struct pbuf *p, u8_t ocf, u8_t ogf, u8_t len)
 	return p;
 }
 
+
 /* hci_inquiry():
  *
  * Cause the Host contoller to enter inquiry mode to discovery other nearby
@@ -728,7 +757,7 @@ err_t hci_inquiry(u32_t lap, u8_t inq_len, u8_t num_resp, err_t (* inq_complete)
 		return ERR_MEM; /* Could not allocate memory for pbuf */
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_INQUIRY_OCF, HCI_LINK_CTRL_OGF, HCI_INQUIRY_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_INQUIRY, HCI_OGF_LINK_CONTROL, HCI_INQUIRY_PLEN);
 	/* Assembling cmd prameters */
 	((u8_t *)p->payload)[4] = lap & 0xFF;
 	((u8_t *)p->payload)[5] = lap >> 8;
@@ -762,7 +791,7 @@ err_t hci_disconnect(struct bd_addr *bdaddr, u8_t reason)
 		return ERR_MEM; /* Could not allocate memory for pbuf */
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_DISCONN_OCF, HCI_LINK_CTRL_OGF, HCI_DISCONN_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_DISCONNECT, HCI_OGF_LINK_CONTROL, HCI_DISCONN_PLEN);
 
 	/* Assembling cmd prameters */
 	((u16_t *)p->payload)[2] = link->conhdl;
@@ -788,7 +817,7 @@ err_t hci_reject_connection_request(struct bd_addr *bdaddr, u8_t reason)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_REJECT_CONN_REQ_OCF, HCI_LINK_CTRL_OGF, HCI_REJECT_CONN_REQ_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_REJECT_CONNECTION_REQUEST, HCI_OGF_LINK_CONTROL, HCI_REJECT_CONN_REQ_PLEN);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload) + 4, bdaddr->addr, 6);
 	((u8_t *)p->payload)[10] = reason;
@@ -816,7 +845,7 @@ err_t hci_pin_code_request_reply(struct bd_addr *bdaddr, u8_t pinlen, u8_t *pinc
 	MEMSET((u8_t *)p->payload, 0, HCI_PIN_CODE_REQ_REP_PLEN);
 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_PIN_CODE_REQ_REP, HCI_LINK_CTRL_OGF, HCI_PIN_CODE_REQ_REP_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_PIN_CODE_REQ_REP, HCI_OGF_LINK_CONTROL, HCI_PIN_CODE_REQ_REP_PLEN);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload) + 4, bdaddr->addr, 6);
 	((u8_t *)p->payload)[10] = pinlen;
@@ -841,7 +870,7 @@ err_t hci_pin_code_request_neg_reply(struct bd_addr *bdaddr)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_PIN_CODE_REQ_NEG_REP, HCI_LINK_CTRL_OGF, HCI_PIN_CODE_REQ_NEG_REP_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_PIN_CODE_REQ_NEG_REP, HCI_OGF_LINK_CONTROL, HCI_PIN_CODE_REQ_NEG_REP_PLEN);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload)+4, bdaddr->addr, 6);
 	phybusif_output(p, p->tot_len);
@@ -873,7 +902,7 @@ err_t hci_sniff_mode(struct bd_addr *bdaddr, u16_t max_interval, u16_t min_inter
 	}
 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_SNIFF_MODE, HCI_LINK_POLICY, HCI_SNIFF_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_SNIFF_MODE, HCI_OGF_LINK_POLICY, HCI_SNIFF_PLEN);
 	/* Assembling cmd prameters */
 	((u16_t *)p->payload)[2] = link->conhdl;
 	((u16_t *)p->payload)[3] = max_interval;
@@ -909,7 +938,7 @@ err_t hci_write_link_policy_settings(struct bd_addr *bdaddr, u16_t link_policy)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_W_LINK_POLICY, HCI_LINK_POLICY, HCI_W_LINK_POLICY_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_W_LINK_POLICY, HCI_OGF_LINK_POLICY, HCI_W_LINK_POLICY_PLEN);
 
 	/* Assembling cmd prameters */
 	((u16_t *)p->payload)[2] = link->conhdl;
@@ -931,7 +960,7 @@ err_t hci_reset(void)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_RESET_OCF, HCI_HC_BB_OGF, HCI_RESET_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_RESET, HCI_OGF_HOST_C_N_BB, HCI_RESET_PLEN);
 	/* Assembling cmd prameters */
 	phybusif_output(p, p->tot_len);
 	pbuf_free(p);
@@ -994,7 +1023,7 @@ err_t hci_set_event_filter(u8_t filter_type, u8_t filter_cond_type, u8_t* cond)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_SET_EV_FILTER_OCF, HCI_HC_BB_OGF, HCI_SET_EV_FILTER_PLEN+cond_len);
+	p = hci_cmd_ass(p, HCI_OCF_SET_EVENT_FILTER, HCI_OGF_HOST_C_N_BB, HCI_SET_EV_FILTER_PLEN+cond_len);
 	((u8_t *)p->payload)[4] = filter_type;
 	((u8_t *)p->payload)[5] = filter_cond_type;
 	/* Assembling cmd prameters */
@@ -1018,7 +1047,7 @@ err_t hci_write_stored_link_key(struct bd_addr *bdaddr, u8_t *link)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_WRITE_STORED_LINK_KEY, HCI_HC_BB_OGF, HCI_WRITE_STORED_LINK_KEY_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_WRITE_STORED_LINK_KEY, HCI_OGF_HOST_C_N_BB, HCI_WRITE_STORED_LINK_KEY_PLEN);
 	/* Assembling cmd prameters */
 	((u8_t *)p->payload)[4] = 0x01;
 	MEMCPY(((u8_t *)p->payload) + 5, bdaddr->addr, 6);
@@ -1041,7 +1070,7 @@ err_t hci_change_local_name(u8_t *name, u8_t len)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_CHANGE_LOCAL_NAME, HCI_HC_BB_OGF, HCI_CHANGE_LOCAL_NAME_PLEN + len);
+	p = hci_cmd_ass(p, HCI_OCF_CHANGE_LOCAL_NAME, HCI_OGF_HOST_C_N_BB, HCI_CHANGE_LOCAL_NAME_PLEN + len);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload) + 4, name, len);
 	phybusif_output(p, p->tot_len);
@@ -1063,7 +1092,7 @@ err_t hci_write_page_timeout(u16_t page_timeout)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_W_PAGE_TIMEOUT_OCF, HCI_HC_BB_OGF, HCI_W_PAGE_TIMEOUT_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_WRITE_PAGE_TIMEOUT, HCI_OGF_HOST_C_N_BB, HCI_W_PAGE_TIMEOUT_PLEN);
 	/* Assembling cmd prameters */
 	((u16_t *)p->payload)[2] = page_timeout;
 	phybusif_output(p, p->tot_len);
@@ -1085,7 +1114,7 @@ err_t hci_write_scan_enable(u8_t scan_enable)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_W_SCAN_EN_OCF, HCI_HC_BB_OGF, HCI_W_SCAN_EN_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_WRITE_SCAN_ENABLE, HCI_OGF_HOST_C_N_BB, HCI_W_SCAN_EN_PLEN);
 	/* Assembling cmd prameters */
 	((u8_t *)p->payload)[4] = scan_enable;
 	phybusif_output(p, p->tot_len);
@@ -1107,7 +1136,7 @@ err_t hci_write_cod(u8_t *cod)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_W_COD_OCF, HCI_HC_BB_OGF, HCI_W_COD_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_WRITE_COD, HCI_OGF_HOST_C_N_BB, HCI_W_COD_PLEN);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload)+4, cod, 3);
 	phybusif_output(p, p->tot_len);
@@ -1129,7 +1158,7 @@ err_t hci_set_hc_to_h_fc(void)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_SET_HC_TO_H_FC_OCF, HCI_HC_BB_OGF, HCI_SET_HC_TO_H_FC_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_SET_HC_TO_H_FC, HCI_OGF_HOST_C_N_BB, HCI_SET_HC_TO_H_FC_PLEN);
 	/* Assembling cmd prameters */
 	((u8_t *)p->payload)[4] = 0x01; /* Flow control on for HCI ACL Data Packets and off for HCI 
 									   SCO Data Packets in direction from Host Controller to 
@@ -1153,7 +1182,7 @@ err_t hci_host_buffer_size(void)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_H_BUF_SIZE_OCF, HCI_HC_BB_OGF, HCI_H_BUF_SIZE_PLEN); 
+	p = hci_cmd_ass(p, HCI_OCF_HOST_BUFFER_SIZE, HCI_OGF_HOST_C_N_BB, HCI_H_BUF_SIZE_PLEN); 
 	((u16_t *)p->payload)[2] = HCI_HOST_ACL_MAX_LEN; /* Host ACL data packet maximum length */
 	((u8_t *)p->payload)[6] = 255; /* Host SCO Data Packet Length */
 	*((u16_t *)(((u8_t *)p->payload)+7)) = HCI_HOST_MAX_NUM_ACL; /* Host max total num ACL data packets */
@@ -1180,7 +1209,7 @@ err_t hci_host_num_comp_packets(u16_t conhdl, u16_t num_complete)
 		return ERR_MEM;
 	}
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_H_NUM_COMPL_OCF, HCI_HC_BB_OGF, HCI_H_NUM_COMPL_PLEN); 
+	p = hci_cmd_ass(p, HCI_OCF_HOST_NUM_COMPLETED_PACKETS, HCI_OGF_HOST_C_N_BB, HCI_H_NUM_COMPL_PLEN); 
 	((u16_t *)p->payload)[2] = conhdl;
 	((u16_t *)p->payload)[3] = num_complete; /* Number of completed acl packets */
 
@@ -1205,7 +1234,7 @@ err_t hci_read_buffer_size(void)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_R_BUF_SIZE_OCF, HCI_INFO_PARAM_OGF, HCI_R_BUF_SIZE_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_READ_BUFFER_SIZE, HCI_OGF_INFO_PARAM, HCI_R_BUF_SIZE_PLEN);
 	/* Assembling cmd prameters */
 	phybusif_output(p, p->tot_len);
 	pbuf_free(p);
@@ -1225,7 +1254,7 @@ err_t hci_read_local_features(void)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_R_SUPPORTED_LOCAL_FEATURES_OCF, HCI_INFO_PARAM_OGF, HCI_R_SUPPORTED_LOCAL_FEATURES_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_READ_SUPPORTED_LOCAL_FEATURES, HCI_OGF_INFO_PARAM, HCI_R_SUPPORTED_LOCAL_FEATURES_PLEN);
 	/* Assembling cmd prameters */
 	phybusif_output(p, p->tot_len);
 	pbuf_free(p);
@@ -1248,7 +1277,8 @@ err_t hci_read_bd_addr(err_t (* rbd_complete)(void *arg, struct bd_addr *bdaddr)
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_READ_BD_ADDR, HCI_INFO_PARAM_OGF, HCI_R_BD_ADDR_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_READ_BD_ADDR, HCI_OGF_INFO_PARAM, HCI_R_BD_ADDR_PLEN);
+
 	/* Assembling cmd prameters */
 	phybusif_output(p, p->tot_len);
 	pbuf_free(p);
@@ -1279,7 +1309,7 @@ err_t lp_write_flush_timeout(struct bd_addr *bdaddr, u16_t flushto)
 	}
 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_W_FLUSHTO, HCI_HC_BB_OGF, HCI_W_FLUSHTO_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_W_FLUSHTO, HCI_OGF_HOST_C_N_BB, HCI_W_FLUSHTO_PLEN);
 	/* Assembling cmd prameters */
 	((u16_t *)p->payload)[2] = link->conhdl;
 	((u16_t *)p->payload)[3] = flushto;
@@ -1338,7 +1368,7 @@ err_t lp_connect_req(struct bd_addr *bdaddr, u8_t allow_role_switch)
 	}
 
 	/* Assembling command packet */
-	p = hci_cmd_ass(p, HCI_CREATE_CONN_OCF, HCI_LINK_CTRL_OGF, HCI_CREATE_CONN_PLEN);
+	p = hci_cmd_ass(p, HCI_OCF_CREATE_CONNECTION, HCI_OGF_LINK_CONTROL, HCI_CREATE_CONN_PLEN);
 	/* Assembling cmd prameters */
 	MEMCPY(((u8_t *)p->payload)+4, bdaddr->addr, 6);
 

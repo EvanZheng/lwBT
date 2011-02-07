@@ -52,10 +52,14 @@ void hci_reset_all(void);
 void hci_arg(void *arg);
 void hci_cmd_complete(err_t (* cmd_complete)(void *arg, struct hci_pcb *pcb, 
 			u8_t ogf, u8_t ocf, u8_t result));
+void hci_cmd_status(err_t (* cmd_status)(void *arg, struct hci_pcb *pcb, 
+			u8_t ogf, u8_t ocf, u8_t result));
 void hci_pin_req(err_t (* pin_req)(void *arg, struct bd_addr *bdaddr));
 void hci_link_key_not(err_t (* link_key_not)(void *arg, struct bd_addr *bdaddr, u8_t *key));
 void  hci_wlp_complete(err_t (* wlp_complete)(void *arg, struct bd_addr *bdaddr));
 void hci_connection_complete(err_t (* conn_complete)(void *arg, struct bd_addr *bdaddr));
+void hci_vendor_spec(u8_t (* vendor_spec)(u8_t c));
+
 #define hci_num_cmd(pcb) ((pcb)->numcmd)
 #define hci_num_acl(pcb) ((pcb)->hc_num_acl)
 #define hci_maxsize(pcb) ((pcb)->maxsize)
@@ -77,11 +81,13 @@ err_t hci_host_buffer_size(void);
 err_t hci_host_num_comp_packets(u16_t conhdl, u16_t num_complete);
 err_t hci_read_buffer_size(void);
 err_t hci_read_local_features(void);
+err_t hci_read_local_version_info(void);
 err_t hci_read_bd_addr(err_t (* rbd_complete)(void *arg, struct bd_addr *bdaddr));
 
 /* Lower layers interface */
 void hci_acl_input(struct pbuf *p);
 void hci_event_input(struct pbuf *p);
+u8_t hci_vendor_spec_input(u8_t c);
 
 /* L2CAP interface */
 err_t lp_write_flush_timeout(struct bd_addr *bdaddr, u16_t flushto);
@@ -90,165 +96,153 @@ err_t lp_connect_req(struct bd_addr *bdaddr, u8_t allow_role_switch);
 u8_t lp_is_connected(struct bd_addr *bdaddr);
 u16_t lp_pdu_maxsize(void);
 
-/* HCI packet indicators */
+/*************************************************************
+ * HCI packet indicators
+ *************************************************************/
 #define HCI_COMMAND_DATA_PACKET 0x01
 #define HCI_ACL_DATA_PACKET     0x02
 #define HCI_SCO_DATA_PACKET     0x03
 #define HCI_EVENT_PACKET        0x04
 
-#define HCI_EVENT_HDR_LEN 2
-#define HCI_ACL_HDR_LEN 4
-#define HCI_SCO_HDR_LEN 3
-#define HCI_CMD_HDR_LEN 3
+/*************************************************************
+ * Opcode Group Field (OGF) values
+ *************************************************************/
+#define HCI_OGF_LINK_CONTROL 0x01   /* Link Control Commands */
+#define HCI_OGF_LINK_POLICY 0x02    /* Link Policy Commands */
+#define HCI_OGF_HOST_C_N_BB 0x03    /* Host Controller & Baseband Commands */
+#define HCI_OGF_INFO_PARAM 0x04     /* Informational Parameters */
+#define HCI_OGF_STATUS_PARAM 0x05   /* Status Parameters */
+#define HCI_OGF_TESTING 0x06        /* Testing Commands */
+#define HCI_OGF_VENDOR_SPEC   0x3f	/* Vendor specific */
 
-/* Opcode Group Field (OGF) values */
-#define HCI_LINK_CONTROL 0x01   /* Link Control Commands */
-#define HCI_LINK_POLICY 0x02    /* Link Policy Commands */
-#define HCI_HOST_C_N_BB 0x03    /* Host Controller & Baseband Commands */
-#define HCI_INFO_PARAM 0x04     /* Informational Parameters */
-#define HCI_STATUS_PARAM 0x05   /* Status Parameters */
-#define HCI_TESTING 0x06        /* Testing Commands */
-
-/* Opcode Command Field (OCF) values */
-
+/*************************************************************
+ * Opcode Command Field (OCF) values
+ *************************************************************/
 /* Link control commands */
-#define HCI_INQUIRY 0x01
-#define HCI_CREATE_CONNECTION 0x05
-#define HCI_REJECT_CONNECTION_REQUEST 0x0A
-#define HCI_DISCONNECT 0x06
-#define HCI_PIN_CODE_REQ_REP 0x0D
-#define HCI_PIN_CODE_REQ_NEG_REP 0x0E
-#define HCI_SET_CONN_ENCRYPT 0x13
+#define HCI_OCF_INQUIRY 0x01
+#define HCI_OCF_CREATE_CONNECTION 0x05
+#define HCI_OCF_REJECT_CONNECTION_REQUEST 0x0A
+#define HCI_OCF_DISCONNECT 0x06
+#define HCI_OCF_PIN_CODE_REQ_REP 0x0D
+#define HCI_OCF_PIN_CODE_REQ_NEG_REP 0x0E
+#define HCI_OCF_SET_CONN_ENCRYPT 0x13
 
 /* Link Policy commands */
-#define HCI_HOLD_MODE 0x01
-#define HCI_SNIFF_MODE 0x03
-#define HCI_EXIT_SNIFF_MODE 0x04
-#define HCI_PARK_MODE 0x05
-#define HCI_EXIT_PARK_MODE 0x06
-#define HCI_W_LINK_POLICY 0x0D
+#define HCI_OCF_HOLD_MODE 0x01
+#define HCI_OCF_SNIFF_MODE 0x03
+#define HCI_OCF_EXIT_SNIFF_MODE 0x04
+#define HCI_OCF_PARK_MODE 0x05
+#define HCI_OCF_EXIT_PARK_MODE 0x06
+#define HCI_OCF_W_LINK_POLICY 0x0D
 
 /* Host-Controller and Baseband Commands */
-#define HCI_SET_EVENT_MASK 0x01
-#define HCI_RESET 0x03
-#define HCI_SET_EVENT_FILTER 0x05
-#define HCI_WRITE_STORED_LINK_KEY 0x11
-#define HCI_ROLE_CHANGE 0x12
-#define HCI_CHANGE_LOCAL_NAME 0x13
+#define HCI_OCF_SET_EVENT_MASK 0x01
+#define HCI_OCF_RESET 0x03
+#define HCI_OCF_SET_EVENT_FILTER 0x05
+#define HCI_OCF_WRITE_STORED_LINK_KEY 0x11
+#define HCI_OCF_ROLE_CHANGE 0x12
+#define HCI_OCF_CHANGE_LOCAL_NAME 0x13
 
-#define HCI_WRITE_PAGE_TIMEOUT 0x18
-#define HCI_WRITE_SCAN_ENABLE 0x1A
-#define HCI_WRITE_COD 0x24
-#define HCI_W_FLUSHTO 0x28
-#define HCI_SET_HC_TO_H_FC 0x31
+#define HCI_OCF_WRITE_PAGE_TIMEOUT 0x18
+#define HCI_OCF_WRITE_SCAN_ENABLE 0x1A
+#define HCI_OCF_WRITE_COD 0x24
+#define HCI_OCF_W_FLUSHTO 0x28
+#define HCI_OCF_SET_HC_TO_H_FC 0x31
+#define HCI_OCF_HOST_BUFFER_SIZE 0x33
+#define HCI_OCF_HOST_NUM_COMPLETED_PACKETS 0x35
 
 /* Informational Parameters */
-#define HCI_READ_BUFFER_SIZE 0x05
-#define HCI_READ_BD_ADDR 0x09
+#define HCI_OCF_READ_LOCAL_VERSION_INFORMATION 0x01
+#define HCI_OCF_READ_SUPPORTED_LOCAL_FEATURES 0x03
+#define HCI_OCF_READ_BUFFER_SIZE 0x05
+#define HCI_OCF_READ_BD_ADDR 0x09
 
 /* Status Parameters */
-#define HCI_READ_FAILED_CONTACT_COUNTER 0x01
-#define HCI_RESET_FAILED_CONTACT_COUNTER 0x02
-#define HCI_GET_LINK_QUALITY 0x03
-#define HCI_READ_RSSI 0x05
+#define HCI_OCF_READ_FAILED_CONTACT_COUNTER 0x01
+#define HCI_OCF_RESET_FAILED_CONTACT_COUNTER 0x02
+#define HCI_OCF_GET_LINK_QUALITY 0x03
+#define HCI_OCF_READ_RSSI 0x05
 
 /* Testing commands */
 
+/*************************************************************
+ * Events
+ *************************************************************/
 /* Possible event codes */
-#define HCI_INQUIRY_COMPLETE 0x01
-#define HCI_INQUIRY_RESULT 0x02
-#define HCI_CONNECTION_COMPLETE 0x03
-#define HCI_CONNECTION_REQUEST 0x04
-#define HCI_DISCONNECTION_COMPLETE 0x05
-#define HCI_ENCRYPTION_CHANGE 0x08
-#define HCI_QOS_SETUP_COMPLETE 0x0D
-#define HCI_COMMAND_COMPLETE 0x0E
-#define HCI_COMMAND_STATUS 0x0F
-#define HCI_HARDWARE_ERROR 0x10
-#define HCI_ROLE_CHANGE 0x12
-#define HCI_NBR_OF_COMPLETED_PACKETS 0x13
-#define HCI_MODE_CHANGE 0x14
-#define HCI_PIN_CODE_REQUEST 0x16
-#define HCI_LINK_KEY_NOTIFICATION 0x18
-#define HCI_DATA_BUFFER_OVERFLOW 0x1A
-#define HCI_MAX_SLOTS_CHANGE 0x1B
-#define HCI_PAGE_SCAN_REP_MODE_CHANGE 0x20
+#define HCI_EVT_INQUIRY_COMPLETE 0x01
+#define HCI_EVT_INQUIRY_RESULT 0x02
+#define HCI_EVT_CONNECTION_COMPLETE 0x03
+#define HCI_EVT_CONNECTION_REQUEST 0x04
+#define HCI_EVT_DISCONNECTION_COMPLETE 0x05
+#define HCI_EVT_ENCRYPTION_CHANGE 0x08
+#define HCI_EVT_QOS_SETUP_COMPLETE 0x0D
+#define HCI_EVT_COMMAND_COMPLETE 0x0E
+#define HCI_EVT_COMMAND_STATUS 0x0F
+#define HCI_EVT_HARDWARE_ERROR 0x10
+#define HCI_EVT_ROLE_CHANGE 0x12
+#define HCI_EVT_NBR_OF_COMPLETED_PACKETS 0x13
+#define HCI_EVT_MODE_CHANGE 0x14
+#define HCI_EVT_PIN_CODE_REQUEST 0x16
+#define HCI_EVT_LINK_KEY_NOTIFICATION 0x18
+#define HCI_EVT_DATA_BUFFER_OVERFLOW 0x1A
+#define HCI_EVT_MAX_SLOTS_CHANGE 0x1B
+#define HCI_EVT_PAGE_SCAN_REP_MODE_CHANGE 0x20
+#define HCI_EVT_VENDOR_SPEC 0xff
 
-/* Success code */
-#define HCI_SUCCESS 0x00
-/* Possible error codes */
-#define HCI_UNKNOWN_HCI_COMMAND 0x01
-#define HCI_NO_CONNECTION 0x02
-#define HCI_HW_FAILURE 0x03
-#define HCI_PAGE_TIMEOUT 0x04
-#define HCI_AUTHENTICATION_FAILURE 0x05
-#define HCI_KEY_MISSING 0x06
-#define HCI_MEMORY_FULL 0x07
-#define HCI_CONN_TIMEOUT 0x08
-#define HCI_MAX_NUMBER_OF_CONNECTIONS 0x09
-#define HCI_MAX_NUMBER_OF_SCO_CONNECTIONS_TO_DEVICE 0x0A
-#define HCI_ACL_CONNECTION_EXISTS 0x0B
-#define HCI_COMMAND_DISSALLOWED 0x0C
-#define HCI_HOST_REJECTED_DUE_TO_LIMITED_RESOURCES 0x0D
-#define HCI_HOST_REJECTED_DUE_TO_SECURITY_REASONS 0x0E
-#define HCI_HOST_REJECTED_DUE_TO_REMOTE_DEVICE_ONLY_PERSONAL_SERVICE 0x0F
-#define HCI_HOST_TIMEOUT 0x10
-#define HCI_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE 0x11
-#define HCI_INVALID_HCI_COMMAND_PARAMETERS 0x12
-#define HCI_OTHER_END_TERMINATED_CONN_USER_ENDED 0x13
-#define HCI_OTHER_END_TERMINATED_CONN_LOW_RESOURCES 0x14
-#define HCI_OTHER_END_TERMINATED_CONN_ABOUT_TO_POWER_OFF 0x15
-#define HCI_CONN_TERMINATED_BY_LOCAL_HOST 0x16
-#define HCI_REPETED_ATTEMPTS 0x17
-#define HCI_PAIRING_NOT_ALLOWED 0x18
-#define HCI_UNKNOWN_LMP_PDU 0x19
-#define HCI_UNSUPPORTED_REMOTE_FEATURE 0x1A
-#define HCI_SCO_OFFSET_REJECTED 0x1B
-#define HCI_SCO_INTERVAL_REJECTED 0x1C
-#define HCI_SCO_AIR_MODE_REJECTED 0x1D
-#define HCI_INVALID_LMP_PARAMETERS 0x1E
-#define HCI_UNSPECIFIED_ERROR 0x1F
-#define HCI_UNSUPPORTED_LMP_PARAMETER_VALUE 0x20
-#define HCI_ROLE_CHANGE_NOT_ALLOWED 0x21
-#define HCI_LMP_RESPONSE_TIMEOUT 0x22
-#define HCI_LMP_ERROR_TRANSACTION_COLLISION 0x23
-#define HCI_LMP_PDU_NOT_ALLOWED 0x24
-#define HCI_ENCRYPTION_MODE_NOT_ACCEPTABLE 0x25
-#define HCI_UNIT_KEY_USED 0x26
-#define HCI_QOS_NOT_SUPPORTED 0x27
-#define HCI_INSTANT_PASSED 0x28
-#define HCI_PAIRING_UNIT_KEY_NOT_SUPPORTED 0x29
+/*************************************************************
+ * Error codes
+ *************************************************************/
+#define HCI_ERR_SUCCESS 0x00
+#define HCI_ERR_UNKNOWN_HCI_COMMAND 0x01
+#define HCI_ERR_NO_CONNECTION 0x02
+#define HCI_ERR_HW_FAILURE 0x03
+#define HCI_ERR_PAGE_TIMEOUT 0x04
+#define HCI_ERR_AUTHENTICATION_FAILURE 0x05
+#define HCI_ERR_KEY_MISSING 0x06
+#define HCI_ERR_MEMORY_FULL 0x07
+#define HCI_ERR_CONN_TIMEOUT 0x08
+#define HCI_ERR_MAX_NUMBER_OF_CONNECTIONS 0x09
+#define HCI_ERR_MAX_NUMBER_OF_SCO_CONNECTIONS_TO_DEVICE 0x0A
+#define HCI_ERR_ACL_CONNECTION_EXISTS 0x0B
+#define HCI_ERR_COMMAND_DISSALLOWED 0x0C
+#define HCI_ERR_HOST_REJECTED_DUE_TO_LIMITED_RESOURCES 0x0D
+#define HCI_ERR_HOST_REJECTED_DUE_TO_SECURITY_REASONS 0x0E
+#define HCI_ERR_HOST_REJECTED_DUE_TO_REMOTE_DEVICE_ONLY_PERSONAL_SERVICE 0x0F
+#define HCI_ERR_HOST_TIMEOUT 0x10
+#define HCI_ERR_UNSUPPORTED_FEATURE_OR_PARAMETER_VALUE 0x11
+#define HCI_ERR_INVALID_HCI_COMMAND_PARAMETERS 0x12
+#define HCI_ERR_OTHER_END_TERMINATED_CONN_USER_ENDED 0x13
+#define HCI_ERR_OTHER_END_TERMINATED_CONN_LOW_RESOURCES 0x14
+#define HCI_ERR_OTHER_END_TERMINATED_CONN_ABOUT_TO_POWER_OFF 0x15
+#define HCI_ERR_CONN_TERMINATED_BY_LOCAL_HOST 0x16
+#define HCI_ERR_REPETED_ATTEMPTS 0x17
+#define HCI_ERR_PAIRING_NOT_ALLOWED 0x18
+#define HCI_ERR_UNKNOWN_LMP_PDU 0x19
+#define HCI_ERR_UNSUPPORTED_REMOTE_FEATURE 0x1A
+#define HCI_ERR_SCO_OFFSET_REJECTED 0x1B
+#define HCI_ERR_SCO_INTERVAL_REJECTED 0x1C
+#define HCI_ERR_SCO_AIR_MODE_REJECTED 0x1D
+#define HCI_ERR_INVALID_LMP_PARAMETERS 0x1E
+#define HCI_ERR_UNSPECIFIED_ERROR 0x1F
+#define HCI_ERR_UNSUPPORTED_LMP_PARAMETER_VALUE 0x20
+#define HCI_ERR_ROLE_CHANGE_NOT_ALLOWED 0x21
+#define HCI_ERR_LMP_RESPONSE_TIMEOUT 0x22
+#define HCI_ERR_LMP_ERROR_TRANSACTION_COLLISION 0x23
+#define HCI_ERR_LMP_PDU_NOT_ALLOWED 0x24
+#define HCI_ERR_ENCRYPTION_MODE_NOT_ACCEPTABLE 0x25
+#define HCI_ERR_UNIT_KEY_USED 0x26
+#define HCI_ERR_QOS_NOT_SUPPORTED 0x27
+#define HCI_ERR_INSTANT_PASSED 0x28
+#define HCI_ERR_PAIRING_UNIT_KEY_NOT_SUPPORTED 0x29
 
+/*************************************************************
+ * Lengths
+ *************************************************************/
 /* Specification specific parameters */
 #define HCI_BD_ADDR_LEN 6
 #define HCI_LMP_FEATURES_LEN 8
 #define HCI_LINK_KEY_LEN 16
 #define HCI_LMP_FEAT_LEN 8
-
-/* Command OGF */
-#define HCI_LINK_CTRL_OGF 0x01 /* Link ctrl cmds */
-#define HCI_HC_BB_OGF 0x03 /* Host controller and baseband commands */
-#define HCI_INFO_PARAM_OGF 0x04 /* Informational parameters */
-
-/* Command OCF */
-#define HCI_R_LOCAL_VERSION_INFO_OCF 0x01
-#define HCI_R_SUPPORTED_LOCAL_FEATURES_OCF 0x03
-#define HCI_INQUIRY_OCF 0x01
-#define HCI_CREATE_CONN_OCF 0x05
-#define HCI_DISCONN_OCF 0x06
-#define HCI_REJECT_CONN_REQ_OCF 0x0A
-#define HCI_SET_EV_MASK_OCF 0x01
-#define HCI_RESET_OCF 0x03
-#define HCI_SET_EV_FILTER_OCF 0x05
-#define HCI_W_PAGE_TIMEOUT_OCF 0x18
-#define HCI_W_SCAN_EN_OCF 0x1A
-#define HCI_R_COD_OCF 0x23
-#define HCI_W_COD_OCF 0x24
-#define HCI_SET_HC_TO_H_FC_OCF 0x31
-#define HCI_H_BUF_SIZE_OCF 0x33
-#define HCI_H_NUM_COMPL_OCF 0x35
-#define HCI_R_BUF_SIZE_OCF 0x05
-#define HCI_R_BD_ADDR_OCF 0x09
 
 /* Command packet length (including ACL header)*/
 #define HCI_INQUIRY_PLEN 9
@@ -276,7 +270,16 @@ u16_t lp_pdu_maxsize(void);
 #define HCI_R_BUF_SIZE_PLEN 4
 #define HCI_R_BD_ADDR_PLEN 4
 #define HCI_R_SUPPORTED_LOCAL_FEATURES_PLEN 4
+#define HCI_R_LOCAL_VERSION_INFORMATION 4
+#define HCI_EVENT_HDR_LEN 2
+#define HCI_ACL_HDR_LEN 4
+#define HCI_SCO_HDR_LEN 3
+#define HCI_CMD_HDR_LEN 3
 
+
+/*************************************************************
+ * Command parameters
+ *************************************************************/
 /* Set Event Filter params */
 #define HCI_SET_EV_FILTER_CLEAR 0
 #define HCI_SET_EV_FILTER_INQUIRY 1
@@ -291,6 +294,7 @@ u16_t lp_pdu_maxsize(void);
 #define HCI_SET_EV_FILTER_AUTOACC_ROLESW 3
 
 /* Write Scan Enable params */
+#define HCI_SCAN_DISABLE 0
 #define HCI_SCAN_EN_INQUIRY 1
 #define HCI_SCAN_EN_PAGE 2
 
@@ -350,6 +354,8 @@ struct hci_pcb {
 	err_t (* wlp_complete)(void *arg, struct bd_addr *bdaddr);
 	err_t (* conn_complete)(void *arg, struct bd_addr *bdaddr);
 	err_t (* cmd_complete)(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t result);
+	err_t (* cmd_status)(void *arg, struct hci_pcb *pcb, u8_t ogf, u8_t ocf, u8_t result);
+	u8_t (* vendor_spec)(u8_t c);
 };
 
 #define HCI_EVENT_PIN_REQ(pcb,bdaddr,ret) \
@@ -377,6 +383,9 @@ struct hci_pcb {
 #define HCI_EVENT_CMD_COMPLETE(pcb,ogf,ocf,result,ret) \
 	if((pcb)->cmd_complete != NULL) \
 		(ret = (pcb)->cmd_complete((pcb)->callback_arg,(pcb),(ogf),(ocf),(result)))
+#define HCI_EVENT_CMD_STATUS(pcb,ogf,ocf,result,ret) \
+	if((pcb)->cmd_status != NULL) \
+		(ret = (pcb)->cmd_status((pcb)->callback_arg,(pcb),(ogf),(ocf),(result)))
 
 /* The HCI LINK lists. */
 extern struct hci_link *hci_active_links; /* List of all active HCI LINKs */
