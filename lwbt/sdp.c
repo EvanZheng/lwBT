@@ -161,31 +161,85 @@ u16_t sdp_next_transid(void)
  * 
  * Check if the given service search pattern matches the record.
  */
+/*
+ * !! WARNING !!
+ * Records are expected to be stored in bluetooth endianness fashion, the
+ * most significant byte first.
+ * Assuming: UUID32 = ((u32)(UUID16))&0x0000FFFF and
+ *           UUID128 = (UUID32*2^96) + Base_Bluetooth_UUID128,
+ * comparison of UUIDs can be made using UUID16.
+ */
 u8_t sdp_pattern_search(struct sdp_record *record, u8_t size, struct pbuf *p) 
 {
 	u8_t i, j;
 	u8_t *payload = (u8_t *)p->payload;
+	u8_t record_uuid_offset, payload_uuid_offset;
 
 	//TODO actually parse the request instead of going over each byte
 	for(i = 0; i < size; ++i) {
 		if(SDP_DE_TYPE(payload[i]) == SDP_DE_TYPE_UUID)  {
 			switch(SDP_DE_SIZE(payload[i])) {
 				case SDP_DE_SIZE_16:
+					payload_uuid_offset = i + 1;
 					for(j = 0; j < record->len; ++j) {
 						if(SDP_DE_TYPE(record->record_de_list[j]) == SDP_DE_TYPE_UUID) {
-							if(*((u16_t *)(payload + i + 1)) == *((u16_t *)(record->record_de_list + j + 1))) {
-								return 1; /* Found a matching UUID in record */
+							record_uuid_offset = j + 1;
+							switch(SDP_DE_SIZE(record->record_de_list[j])) {
+								case SDP_DE_SIZE_32: /* Not tested */
+								case SDP_DE_SIZE_128:
+									record_uuid_offset += 2;
+								case SDP_DE_SIZE_16:
+									if(*((u16_t *)(payload + payload_uuid_offset)) ==
+									   *((u16_t *)(record->record_de_list + record_uuid_offset))) {
+										return 1; /* Found a matching UUID in record */
+									}
+									break;
 							}
 							++j;
 						}
 					}
 					i += 2;
 					break;
-				case SDP_DE_SIZE_32:
+				case SDP_DE_SIZE_32: /* Not tested */
+					payload_uuid_offset = i + 3;
+					for(j = 0; j < record->len; ++j) {
+						if(SDP_DE_TYPE(record->record_de_list[j]) == SDP_DE_TYPE_UUID) {
+							record_uuid_offset = j + 1;
+							switch(SDP_DE_SIZE(record->record_de_list[j])) {
+								case SDP_DE_SIZE_32:
+								case SDP_DE_SIZE_128:
+									record_uuid_offset += 2;
+								case SDP_DE_SIZE_16:
+									if(*((u16_t *)(payload + payload_uuid_offset)) ==
+									   *((u16_t *)(record->record_de_list + record_uuid_offset))) {
+										return 1; /* Found a matching UUID in record */
+									}
+									break;
+							}
+							++j;
+						}
+					}
 					i += 4;
 					break;
 				case SDP_DE_SIZE_128:
-					LWIP_DEBUGF(SDP_DEBUG, ("TODO: add support for 128-bit UUID\n"));
+					payload_uuid_offset = i + 3;
+					for(j = 0; j < record->len; ++j) {
+						if(SDP_DE_TYPE(record->record_de_list[j]) == SDP_DE_TYPE_UUID) {
+							record_uuid_offset = j + 1;
+							switch(SDP_DE_SIZE(record->record_de_list[j])) {
+								case SDP_DE_SIZE_32:
+								case SDP_DE_SIZE_128:
+									record_uuid_offset += 2;
+								case SDP_DE_SIZE_16:
+									if(*((u16_t *)(payload + payload_uuid_offset)) ==
+									   *((u16_t *)(record->record_de_list + record_uuid_offset))) {
+										return 1; /* Found a matching UUID in record */
+									}
+									break;
+							}
+							++j;
+						}
+					}
 					i+= 16;
 					break;
 				default:
@@ -193,7 +247,7 @@ u8_t sdp_pattern_search(struct sdp_record *record, u8_t size, struct pbuf *p)
 			}
 		}
 	}
-	return 1; //TODO change back to 0
+	return 0;
 }
 
 /*
