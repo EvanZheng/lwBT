@@ -138,6 +138,12 @@ err_t phybusif_input(struct phybusif_cb *cb)
 				}
 				break;
 			case W4_EVENT_HDR:
+				if(c == HCI_EVT_VENDOR_SPEC)
+				{
+					LWIP_DEBUGF(PHYBUSIF_DEBUG, ("phybusif_input: vendor specific packet type\n"));
+					cb->state = W4_VENDOR_SPEC;
+					break;
+				}
 				((u8_t *)cb->q->payload)[cb->recvd] = c;
 				cb->tot_recvd++;
 				cb->recvd++;
@@ -213,6 +219,13 @@ err_t phybusif_input(struct phybusif_cb *cb)
 					pbuf_free(cb->p);
 					phybusif_reset(cb);
 					return ERR_OK; /* Since there most likley won't be any more data in the input buffer */
+				}
+				break;
+			case W4_VENDOR_SPEC:
+				if(hci_vendor_spec_input(c) == 0)
+				{
+					pbuf_free(cb->p);
+					phybusif_reset(cb);
 				}
 				break;
 			default:

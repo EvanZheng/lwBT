@@ -47,7 +47,12 @@ err_t phybusif_input(struct phybusif_cb *cb);
 void phybusif_output(struct pbuf *p, u16_t len);
 
 enum phybusif_state {
-  W4_PACKET_TYPE, W4_EVENT_HDR, W4_EVENT_PARAM, W4_ACL_HDR, W4_ACL_DATA
+  W4_PACKET_TYPE,
+  W4_EVENT_HDR, 
+  W4_EVENT_PARAM, 
+  W4_ACL_HDR, 
+  W4_ACL_DATA,
+  W4_VENDOR_SPEC
 };
 
 /* The physical bus interface control block */

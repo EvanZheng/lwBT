@@ -1280,7 +1280,7 @@ err_t hci_read_local_features(void)
 {
 	struct pbuf *p;
 	if((p = pbuf_alloc(PBUF_RAW, HCI_R_BUF_SIZE_PLEN, PBUF_RAM)) == NULL) {
-		LWIP_DEBUGF(HCI_DEBUG, ("hci_read_buffer_size: Could not allocate memory for pbuf\n"));
+		LWIP_DEBUGF(HCI_DEBUG, ("hci_read_local_features: Could not allocate memory for pbuf\n"));
 		return ERR_MEM;
 	} 
 	/* Assembling command packet */
